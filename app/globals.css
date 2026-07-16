@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #fdeef3;
+  color: #3f0f2b;
+}
+
+/* Perforated boarding-pass edge between the stub and the ticket body */
+.perforated {
+  position: relative;
+}
+.perforated::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 0;
+  border-top: 2px dashed rgba(63, 15, 43, 0.25);
+}
+.perforated::after {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: #fdeef3;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .float-slow {
+    animation: floatY 6s ease-in-out infinite;
+  }
+  .fade-up {
+    animation: fadeUp 0.8s ease-out both;
+  }
+  .stamp-in {
+    animation: stampIn 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+  }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes stampIn {
+  0% { opacity: 0; transform: scale(2.2) rotate(-18deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .float-slow, .fade-up, .stamp-in {
+    animation: none !important;
+  }
+}
+
+:focus-visible {
+  outline: 3px solid #C9A227;
+  outline-offset: 2px;
+}
