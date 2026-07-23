@@ -5,26 +5,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "deeni-ink": "#3F0F2B",
-        "deeni-pink-deep": "#C2185B",
-        "deeni-pink-mid": "#E8628F",
-        "deeni-pink-soft": "#F6A8C4",
-        "deeni-blush": "#FDEEF3",
-        "deeni-cream": "#FFF8F1",
-        "deeni-gold": "#C9A227",
-        "deeni-gold-light": "#E9CE7E",
+        // Warm, refined palette
+        "party-bg": "#FFF9F5",
+        "party-surface": "#FFFFFF",
+        "party-border": "#F0E6DF",
+        "party-text": "#2D2019",
+        "party-muted": "#8A7B6F",
+        "party-accent": "#D4956A",
+        "party-accent-deep": "#B87340",
+        "party-blush": "#F8E8DD",
+        "party-gold": "#C9A96E",
+        "party-gold-light": "#E5D4B0",
+        "party-rose": "#E8A0B4",
+        "party-rose-deep": "#D4728E",
       },
       fontFamily: {
         display: ["var(--font-playfair)", "serif"],
         script: ["var(--font-script)", "cursive"],
         body: ["var(--font-nunito)", "sans-serif"],
-      },
-      backgroundImage: {
-        "royal-gradient":
-          "radial-gradient(120% 120% at 50% 0%, #F6A8C4 0%, #E8628F 45%, #C2185B 100%)",
-      },
-      boxShadow: {
-        stamp: "0 0 0 3px rgba(201,162,39,0.35)",
       },
     },
   },

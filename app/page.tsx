@@ -2,67 +2,6 @@
 
 import { useState } from "react";
 
-function CrownIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 40" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M4 36L2 12l14 10 12-18 12 18 14-10-2 24H4Z"
-        fill="currentColor"
-      />
-      <rect x="4" y="34" width="56" height="5" rx="1.5" fill="currentColor" />
-    </svg>
-  );
-}
-
-function CastleIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 200 120" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M20 120V60h10V44h10V30l8-8 8 8v14h10v16h14V38h-6V24l10-10 10 10v14h-6v22h14V60h10v-8h10v8h10v60H20Z"
-        fill="currentColor"
-        opacity="0.9"
-      />
-    </svg>
-  );
-}
-
-function StepperInput({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (n: number) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl border-2 border-deeni-pink-soft bg-white px-4 py-3">
-      <span className="font-body text-sm font-semibold text-deeni-ink/70">
-        Guests attending
-      </span>
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          aria-label="Decrease guest count"
-          onClick={() => onChange(Math.max(1, value - 1))}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-deeni-pink-deep text-lg font-bold text-white transition hover:bg-deeni-ink"
-        >
-          −
-        </button>
-        <span className="w-6 text-center font-display text-xl font-bold text-deeni-ink">
-          {value}
-        </span>
-        <button
-          type="button"
-          aria-label="Increase guest count"
-          onClick={() => onChange(Math.min(20, value + 1))}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-deeni-pink-deep text-lg font-bold text-white transition hover:bg-deeni-ink"
-        >
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -103,134 +42,246 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen w-full">
-      {/* HERO — passport cover */}
-      <section className="relative flex min-h-[92vh] w-full flex-col items-center justify-center overflow-hidden bg-royal-gradient px-6 text-center text-white">
-        <div className="float-slow">
-          <CrownIcon className="mx-auto mb-4 h-10 w-16 text-deeni-gold-light" />
+    <main className="min-h-screen w-full bg-party-bg">
+      {/* ─── HERO ─── */}
+      <section className="relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-6 text-center">
+        {/* Background Video */}
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-full w-full object-cover"
+          >
+            <source src="/birthdayhd.mp4" type="video/mp4" />
+            <source src="/birthday.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-party-bg" />
         </div>
-        <p className="fade-up font-body text-xs font-bold uppercase tracking-[0.35em] text-deeni-gold-light">
-          Kingdom of Deeni
-        </p>
-        <h1 className="fade-up mt-3 font-script text-6xl leading-none text-white drop-shadow-sm sm:text-7xl">
-          Princess Deeni
-        </h1>
-        <p className="fade-up mt-2 font-display text-2xl font-semibold tracking-wide sm:text-3xl">
-          Turns Three
-        </p>
-        <p className="fade-up mt-6 max-w-xs font-body text-sm text-white/90 sm:max-w-sm sm:text-base">
-          Join us for a birthday celebration filled with joy, laughter, dancing
-          &amp; cherished memories.
-        </p>
 
+        <div className="relative z-10 flex flex-col items-center">
+          <p className="fade-up font-body text-[11px] font-bold uppercase tracking-[0.4em] text-party-gold-light">
+            You&apos;re Invited
+          </p>
+
+          <h1 className="fade-up-delay-1 mt-4 font-script text-6xl leading-none text-white sm:text-7xl lg:text-8xl">
+            Princess Deeni
+          </h1>
+
+          <div className="fade-up-delay-2 mt-3 flex items-center gap-3">
+            <span className="h-px w-10 bg-white/30" />
+            <p className="font-display text-lg font-semibold tracking-widest text-white/90 uppercase sm:text-xl">
+              Turns Three
+            </p>
+            <span className="h-px w-10 bg-white/30" />
+          </div>
+
+          <p className="fade-up-delay-3 mt-6 max-w-sm font-body text-sm leading-relaxed text-white/80 sm:text-base">
+            Join us for a celebration filled with joy, laughter,
+            dancing &amp; cherished memories.
+          </p>
+
+          <a
+            href="#details"
+            className="fade-up-delay-3 mt-10 inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-3 font-body text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-white/10"
+          >
+            View Details
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </a>
+        </div>
+
+        {/* Floating RSVP CTA */}
         <a
-          href="#boarding-pass"
-          className="fade-up mt-10 inline-flex items-center gap-2 rounded-full border-2 border-deeni-gold-light/80 bg-white/10 px-6 py-3 font-body text-sm font-bold uppercase tracking-wider text-white backdrop-blur-sm transition hover:bg-white/20"
+          href="#rsvp"
+          aria-label="Scroll to RSVP form"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-party-accent-deep px-5 py-3 font-body text-xs font-bold uppercase tracking-wider text-white transition-transform hover:scale-105 active:scale-95"
         >
-          Open your invitation
-          <span aria-hidden="true">↓</span>
+          RSVP Now
         </a>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-deeni-pink-deep/40 to-transparent" />
       </section>
 
-      {/* BOARDING PASS — party details */}
+      {/* ─── EVENT DETAILS ─── */}
       <section
-        id="boarding-pass"
-        className="flex w-full justify-center bg-deeni-blush px-4 py-16 sm:py-24"
+        id="details"
+        className="w-full bg-party-bg px-4 py-20 sm:py-28"
       >
-        <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl shadow-deeni-pink-deep/10">
-          <div className="bg-deeni-pink-deep px-6 py-5 text-white">
-            <p className="font-body text-[11px] font-bold uppercase tracking-[0.3em] text-deeni-gold-light">
-              Boarding Pass
+        <div className="mx-auto max-w-4xl">
+          {/* Section header */}
+          <div className="mb-14 text-center">
+            <p className="font-body text-[11px] font-bold uppercase tracking-[0.3em] text-party-accent">
+              The Celebration
             </p>
-            <p className="font-display text-xl font-semibold">
-              Royal Celebration &middot; Deeni
-            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold text-party-text sm:text-4xl">
+              Party Details
+            </h2>
           </div>
 
-          <div className="perforated space-y-5 px-6 py-8">
-            <DetailRow
-              label="Date"
-              value="Saturday, August 8, 2026"
-              icon="📅"
-            />
-            <DetailRow label="Time" value="6:00 PM onwards" icon="🕕" />
-            <DetailRow
-              label="Venue"
-              value={"5 Star Banquet Hall\n13-05 43rd Ave, LIC, NY 11101"}
-              icon="📍"
-            />
-            <DetailRow
-              label="Dress Code"
-              value="Wear what makes you feel special & bring your best smile"
-              icon="👗"
-            />
+          {/* Video + Details Grid */}
+          <div className="grid gap-10 md:grid-cols-2 md:items-start">
+            {/* Invitation Video */}
+            <div className="overflow-hidden rounded-2xl border border-party-border bg-party-surface">
+              <div className="border-b border-party-border px-5 py-3">
+                <p className="font-body text-xs font-bold uppercase tracking-widest text-party-muted">
+                  Invitation Video
+                </p>
+              </div>
+              <div className="p-4">
+                <div className="relative aspect-[9/16] max-w-[240px] mx-auto overflow-hidden rounded-xl bg-black">
+                  <video
+                    loop
+                    muted
+                    playsInline
+                    className="h-full w-full object-cover"
+                    ref={(el) => {
+                      if (el) {
+                        const observer = new IntersectionObserver(
+                          ([entry]) => {
+                            if (entry.isIntersecting) {
+                              el.play().catch(() => {});
+                            } else {
+                              el.pause();
+                            }
+                          },
+                          { threshold: 0.5 }
+                        );
+                        observer.observe(el);
+                      }
+                    }}
+                  >
+                    <source src="/birthdayhd.mp4" type="video/mp4" />
+                    <source src="/birthday.mp4" type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+            </div>
+
+            {/* Details Card */}
+            <div className="overflow-hidden rounded-2xl border border-party-border bg-party-surface">
+              <div className="border-b border-party-border px-5 py-3">
+                <p className="font-body text-xs font-bold uppercase tracking-widest text-party-muted">
+                  Event Info
+                </p>
+              </div>
+
+              <div className="divide-y divide-party-border">
+                <DetailRow
+                  icon="📅"
+                  label="Date"
+                  value="Saturday, August 8, 2026"
+                />
+                <DetailRow
+                  icon="🕕"
+                  label="Time"
+                  value="6:00 PM onwards"
+                />
+                <DetailRow
+                  icon="📍"
+                  label="Venue"
+                  value={"5 Star Banquet Hall\n13-05 43rd Ave, LIC, NY 11101"}
+                />
+                <DetailRow
+                  icon="👗"
+                  label="Dress Code"
+                  value="Wear what makes you feel special & bring your best smile"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* RSVP FORM — royal reservation */}
-      <section className="flex w-full justify-center bg-white px-4 py-16 sm:py-24">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <CrownIcon className="mx-auto mb-3 h-7 w-11 text-deeni-gold" />
-            <h2 className="font-display text-3xl font-bold text-deeni-ink">
-              Royal RSVP
+      {/* ─── RSVP FORM ─── */}
+      <section id="rsvp" className="w-full bg-party-surface px-4 py-20 sm:py-28">
+        <div className="mx-auto w-full max-w-md">
+          {/* Section header */}
+          <div className="mb-10 text-center">
+            <p className="font-body text-[11px] font-bold uppercase tracking-[0.3em] text-party-accent">
+              Save Your Spot
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold text-party-text">
+              RSVP
             </h2>
-            <p className="mt-2 font-body text-sm text-deeni-ink/60">
-              One reservation per family is all we need — let us know who's
-              coming to the kingdom.
+            <p className="mt-3 font-body text-sm text-party-muted">
+              One reservation per family — let us know who&apos;s joining the celebration.
             </p>
           </div>
 
           {status === "done" ? (
-            <div className="stamp-in rounded-3xl border-4 border-deeni-gold bg-deeni-cream px-6 py-10 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-4 border-deeni-gold text-2xl">
-                👑
+            <div className="scale-in rounded-2xl border border-party-border bg-party-bg px-6 py-10 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-party-gold text-2xl">
+                ✓
               </div>
-              <p className="font-display text-2xl font-bold text-deeni-pink-deep">
-                Reservation Confirmed!
+              <p className="font-display text-xl font-bold text-party-text">
+                You&apos;re Confirmed!
               </p>
-              <p className="mt-2 font-body text-sm text-deeni-ink/70">
-                Thank you, {name.split(" ")[0] || "friend"}! We can't wait to
-                celebrate with you on August 8th. A confirmation text will
-                follow soon.
+              <p className="mt-2 font-body text-sm text-party-muted">
+                Thank you, <span className="font-bold text-party-accent-deep">{name.split(" ")[0] || "guest"}</span>! We can&apos;t wait to
+                celebrate with you on August 8th.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <Field
-                label="Name"
-                id="name"
+                label="Full Name"
+                id="rsvp-name"
                 type="text"
                 value={name}
                 onChange={setName}
-                placeholder="Jane Doe"
+                placeholder="Your full name"
                 required
               />
               <Field
-                label="Phone number"
-                id="phone"
+                label="Phone Number"
+                id="rsvp-phone"
                 type="tel"
                 value={phone}
                 onChange={setPhone}
-                placeholder="(555) 555-5555"
+                placeholder="+1 (347) 935-2721"
                 required
                 hint="We'll text party updates to this number."
               />
               <Field
                 label="Email (optional)"
-                id="email"
+                id="rsvp-email"
                 type="email"
                 value={email}
                 onChange={setEmail}
-                placeholder="jane@example.com"
+                placeholder="you@email.com"
               />
-              <StepperInput value={guestCount} onChange={setGuestCount} />
+
+              {/* Guest Stepper */}
+              <div>
+                <label className="mb-2 block font-body text-xs font-bold uppercase tracking-wider text-party-muted">
+                  Guests Attending
+                </label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    aria-label="Decrease guest count"
+                    onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-party-border bg-party-bg font-body text-lg font-bold text-party-text transition hover:border-party-accent"
+                  >
+                    −
+                  </button>
+                  <span className="w-8 text-center font-display text-xl font-bold text-party-text">
+                    {guestCount}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Increase guest count"
+                    onClick={() => setGuestCount(Math.min(20, guestCount + 1))}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-party-border bg-party-bg font-body text-lg font-bold text-party-text transition hover:border-party-accent"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
 
               {errorMsg && (
-                <p role="alert" className="font-body text-sm font-semibold text-deeni-pink-deep">
+                <p role="alert" className="font-body text-sm font-semibold text-red-600">
                   {errorMsg}
                 </p>
               )}
@@ -238,7 +289,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="w-full rounded-full bg-deeni-pink-deep py-4 font-body text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-deeni-pink-deep/30 transition hover:bg-deeni-ink disabled:opacity-60"
+                className="w-full rounded-lg bg-party-text py-3.5 font-body text-sm font-bold uppercase tracking-widest text-white transition hover:bg-party-accent-deep disabled:opacity-50"
               >
                 {status === "loading" ? "Reserving..." : "Reserve My Seat"}
               </button>
@@ -247,17 +298,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="flex w-full flex-col items-center gap-4 bg-royal-gradient px-6 py-14 text-center text-white">
-        <CastleIcon className="h-16 w-28 text-white/90" />
-        <p className="font-script text-3xl">See you at the kingdom!</p>
-        <p className="max-w-xs font-body text-xs text-white/80">
-          Questions? Reach Dad at 347-935-2721 or Mom at 929-260-8516.
+      {/* ─── FOOTER ─── */}
+      <footer className="w-full border-t border-party-border bg-party-bg px-6 py-14 text-center">
+        <p className="font-script text-3xl text-party-text">
+          See you at the party!
+        </p>
+        <p className="mt-4 font-body text-xs text-party-muted">
+          Questions? Reach Dad at{" "}
+          <a href="tel:+13479352721" className="underline underline-offset-2 hover:text-party-accent-deep transition">
+            347-935-2721
+          </a>{" "}
+          or Mom at{" "}
+          <a href="tel:+19292608516" className="underline underline-offset-2 hover:text-party-accent-deep transition">
+            929-260-8516
+          </a>
+        </p>
+        <p className="mt-6 font-body text-[10px] text-party-muted/50 uppercase tracking-widest">
+          Princess Deeni&apos;s 3rd Birthday · August 8, 2026
         </p>
       </footer>
     </main>
   );
 }
+
+/* ─── SUBCOMPONENTS ─── */
 
 function DetailRow({
   label,
@@ -269,15 +333,15 @@ function DetailRow({
   icon: string;
 }) {
   return (
-    <div className="flex items-start gap-4">
-      <span className="text-2xl leading-none" aria-hidden="true">
+    <div className="flex items-start gap-4 px-5 py-4">
+      <span className="text-xl leading-none select-none mt-0.5" aria-hidden="true">
         {icon}
       </span>
       <div>
-        <p className="font-body text-[11px] font-bold uppercase tracking-[0.2em] text-deeni-pink-deep">
+        <p className="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-party-muted">
           {label}
         </p>
-        <p className="whitespace-pre-line font-body text-sm font-semibold text-deeni-ink">
+        <p className="whitespace-pre-line font-body text-sm font-semibold text-party-text mt-0.5">
           {value}
         </p>
       </div>
@@ -308,7 +372,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1 block font-body text-xs font-bold uppercase tracking-wider text-deeni-ink/70"
+        className="mb-1.5 block font-body text-xs font-bold uppercase tracking-wider text-party-muted"
       >
         {label}
       </label>
@@ -320,10 +384,10 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-2xl border-2 border-deeni-pink-soft bg-white px-4 py-3 font-body text-sm text-deeni-ink outline-none transition focus:border-deeni-pink-deep"
+        className="w-full rounded-lg border border-party-border bg-party-bg px-4 py-3 font-body text-sm text-party-text outline-none transition focus:border-party-accent focus:ring-1 focus:ring-party-accent"
       />
       {hint && (
-        <p className="mt-1 font-body text-xs text-deeni-ink/50">{hint}</p>
+        <p className="mt-1 font-body text-xs text-party-muted">{hint}</p>
       )}
     </div>
   );

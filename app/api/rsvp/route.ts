@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendSms } from "@/lib/twilio";
 
 function normalizePhone(raw: string) {
-  return raw.replace(/[^\d+]/g, "");
+  let clean = raw.replace(/[^\d+]/g, "");
+  if (!clean.startsWith("+")) {
+    if (clean.length === 10) {
+      clean = "+1" + clean;
+    } else if (clean.length === 11 && clean.startsWith("1")) {
+      clean = "+" + clean;
+    }
+  }
+  return clean;
 }
 
 export async function POST(req: NextRequest) {
@@ -28,14 +37,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const resolvedGuestCount = Number.isFinite(guestCount) && guestCount > 0 ? guestCount : 1;
+
     const rsvp = await prisma.rsvp.create({
       data: {
         name,
         phone,
         email: email || null,
-        guestCount: Number.isFinite(guestCount) && guestCount > 0 ? guestCount : 1,
+        guestCount: resolvedGuestCount,
       },
     });
+
+    // Send Twilio confirmation SMS (don't block response on Twilio failure)
+    try {
+      const smsBody = `👑 Royal RSVP Confirmed!\n\nHello ${name.split(" ")[0] || name}, we are thrilled to welcome you (Total: ${resolvedGuestCount} guest${resolvedGuestCount > 1 ? "s" : ""}) to Princess Deeni's 3rd Birthday Celebration on Saturday, Aug 8, 2026 at 6:00 PM.\n\nSee you at the kingdom!`;
+      await sendSms(phone, smsBody);
+    } catch (smsErr) {
+      console.error("Failed to send confirmation SMS:", smsErr);
+    }
 
     return NextResponse.json({ ok: true, id: rsvp.id }, { status: 201 });
   } catch (err) {
