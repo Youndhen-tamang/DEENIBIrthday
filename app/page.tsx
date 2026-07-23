@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [name, setName] = useState("");
@@ -11,6 +12,7 @@ export default function Home() {
     "idle"
   );
   const [errorMsg, setErrorMsg] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,6 +20,11 @@ export default function Home() {
 
     if (!name.trim() || !phone.trim()) {
       setErrorMsg("Please share your name and phone number.");
+      return;
+    }
+
+    if (!smsConsent) {
+      setErrorMsg("Please agree to receive text messages to continue.");
       return;
     }
 
@@ -280,6 +287,22 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* SMS Consent Checkbox */}
+              <div className="flex items-start gap-3">
+                <input
+                  id="sms-consent"
+                  type="checkbox"
+                  checked={smsConsent}
+                  onChange={(e) => setSmsConsent(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-party-border text-party-accent-deep focus:ring-party-accent accent-party-accent-deep cursor-pointer"
+                />
+                <label htmlFor="sms-consent" className="font-body text-xs text-party-muted leading-relaxed cursor-pointer">
+                  I agree to receive text messages from SwipeScapes RSVP regarding event confirmations and reminders. Message &amp; data rates may apply. Reply STOP to opt out.{" "}
+                  <Link href="/terms" className="underline underline-offset-2 hover:text-party-accent-deep transition">Terms &amp; Conditions</Link>{" "}and{" "}
+                  <Link href="/privacy" className="underline underline-offset-2 hover:text-party-accent-deep transition">Privacy Policy</Link>.
+                </label>
+              </div>
+
               {errorMsg && (
                 <p role="alert" className="font-body text-sm font-semibold text-red-600">
                   {errorMsg}
@@ -313,7 +336,12 @@ export default function Home() {
             929-260-8516
           </a>
         </p>
-        <p className="mt-6 font-body text-[10px] text-party-muted/50 uppercase tracking-widest">
+        <div className="mt-6 flex items-center justify-center gap-3 font-body text-[10px] text-party-muted/60">
+          <Link href="/terms" className="underline underline-offset-2 hover:text-party-accent-deep transition">Terms</Link>
+          <span>·</span>
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-party-accent-deep transition">Privacy</Link>
+        </div>
+        <p className="mt-3 font-body text-[10px] text-party-muted/50 uppercase tracking-widest">
           Princess Deeni&apos;s 3rd Birthday · August 8, 2026
         </p>
       </footer>
