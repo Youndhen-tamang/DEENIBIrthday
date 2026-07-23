@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendSms } from "@/lib/twilio";
 
+// Hardcoded event details for Deeni's Birthday
+const EVENT = {
+  eventName: "Princess Deeni's 3rd Birthday",
+  date: "08/08/2026",
+  time: "6:00 PM",
+  address: "5 Star Banquet Hall, 13-05 43rd Ave, LIC, NY 11101",
+};
+
+function formatMessage(template: string, recipientName: string): string {
+  const firstName = recipientName.split(" ")[0] || recipientName;
+
+  return template
+    .replace(/\{name\}/gi, firstName)
+    .replace(/\[name\]/gi, firstName)
+    .replace(/\[Event Name\]/gi, EVENT.eventName)
+    .replace(/\[MM\/DD\/YYYY\]/gi, EVENT.date)
+    .replace(/\[HH:MM AM\/PM\]/gi, EVENT.time)
+    .replace(/\[Address\]/gi, EVENT.address);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const secret = req.headers.get("x-admin-secret");
@@ -29,8 +49,8 @@ export async function POST(req: NextRequest) {
 
     const results = [];
     for (const rsvp of rsvps) {
-      const formattedMessage = messageText.replace(/{name}/gi, rsvp.name.split(" ")[0] || rsvp.name);
-      
+      const formattedMessage = formatMessage(messageText, rsvp.name);
+
       const res = await sendSms(rsvp.phone, formattedMessage);
       results.push({
         name: rsvp.name,
