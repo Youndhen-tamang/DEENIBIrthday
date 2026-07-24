@@ -13,6 +13,33 @@ export default function Home() {
   );
   const [errorMsg, setErrorMsg] = useState("");
   const [smsConsent, setSmsConsent] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Client-side US phone validation (mirrors server logic)
+  function validateUSPhone(raw: string): { valid: boolean; error?: string } {
+    if (!raw.trim()) return { valid: false, error: "Phone number is required." };
+    const cleaned = raw.trim().replace(/[^\d+]/g, "");
+
+    if (cleaned.startsWith("+")) {
+      if (/^\+1\d{10}$/.test(cleaned)) return { valid: true };
+      return { valid: false, error: "Only US phone numbers are supported for this event." };
+    }
+
+    const digits = cleaned.replace(/\D/g, "");
+    if (digits.length === 10) return { valid: true };
+    if (digits.length === 11 && digits.startsWith("1")) return { valid: true };
+    return { valid: false, error: "Please enter a valid 10-digit US phone number." };
+  }
+
+  function handlePhoneChange(value: string) {
+    setPhone(value);
+    if (value.trim()) {
+      const result = validateUSPhone(value);
+      setPhoneError(result.valid ? "" : result.error || "");
+    } else {
+      setPhoneError("");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,6 +47,13 @@ export default function Home() {
 
     if (!name.trim() || !phone.trim()) {
       setErrorMsg("Please share your name and phone number.");
+      return;
+    }
+
+    const phoneCheck = validateUSPhone(phone);
+    if (!phoneCheck.valid) {
+      setPhoneError(phoneCheck.error || "");
+      setErrorMsg(phoneCheck.error || "Invalid phone number.");
       return;
     }
 
@@ -241,14 +275,15 @@ export default function Home() {
                 required
               />
               <Field
-                label="Phone Number"
+                label="Phone Number (US only)"
                 id="rsvp-phone"
                 type="tel"
                 value={phone}
-                onChange={setPhone}
+                onChange={handlePhoneChange}
                 placeholder="+1 (347) 935-2721"
                 required
-                hint="We'll text party updates to this number."
+                hint={phoneError || "We'll text party updates to this US number."}
+                hintError={!!phoneError}
               />
               <Field
                 label="Email (optional)"
@@ -386,6 +421,7 @@ function Field({
   placeholder,
   required,
   hint,
+  hintError,
 }: {
   label: string;
   id: string;
@@ -395,6 +431,7 @@ function Field({
   placeholder?: string;
   required?: boolean;
   hint?: string;
+  hintError?: boolean;
 }) {
   return (
     <div>
@@ -412,10 +449,16 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-party-border bg-party-bg px-4 py-3 font-body text-sm text-party-text outline-none transition focus:border-party-accent focus:ring-1 focus:ring-party-accent"
+        className={`w-full rounded-lg border bg-party-bg px-4 py-3 font-body text-sm text-party-text outline-none transition focus:ring-1 ${
+          hintError
+            ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+            : "border-party-border focus:border-party-accent focus:ring-party-accent"
+        }`}
       />
       {hint && (
-        <p className="mt-1 font-body text-xs text-party-muted">{hint}</p>
+        <p className={`mt-1 font-body text-xs ${hintError ? "text-red-600 font-semibold" : "text-party-muted"}`}>
+          {hint}
+        </p>
       )}
     </div>
   );

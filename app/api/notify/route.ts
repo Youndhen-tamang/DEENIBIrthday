@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendSms } from "@/lib/twilio";
+import { queueOrSendEmail } from "@/lib/resend";
 
 // Hardcoded event details for Deeni's Birthday
 const EVENT = {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const messageText = typeof body.message === "string" ? body.message.trim() : "";
+    const sendEmailAlso = Boolean(body.sendEmailAlso);
 
     if (!messageText) {
       return NextResponse.json(
@@ -48,6 +50,8 @@ export async function POST(req: NextRequest) {
     }
 
     const results = [];
+    let emailsQueued = 0;
+
     for (const rsvp of rsvps) {
       const formattedMessage = formatMessage(messageText, rsvp.name);
 
@@ -59,6 +63,27 @@ export async function POST(req: NextRequest) {
         sid: res.sid,
         error: res.error,
       });
+
+      if (sendEmailAlso && rsvp.email && rsvp.email.includes("@")) {
+        const firstName = rsvp.name.split(" ")[0] || rsvp.name;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #F0E6DF; border-radius: 12px; background-color: #FFF9F5;">
+            <h3 style="color: #2D2019; margin-top: 0;">👑 Princess Deeni's 3rd Birthday Update</h3>
+            <p style="color: #4A3E3D; font-size: 15px; line-height: 1.5;">Hello <strong>${firstName}</strong>,</p>
+            <p style="color: #2D2019; font-size: 15px; line-height: 1.5; white-space: pre-line;">${formattedMessage}</p>
+            <hr style="border: 0; border-top: 1px solid #E5D4B0; margin: 20px 0;" />
+            <p style="color: #8A7B6F; font-size: 12px;">Event Date: Aug 8, 2026 at 6:00 PM · 5 Star Banquet Hall</p>
+          </div>
+        `;
+
+        const emailRes = await queueOrSendEmail({
+          to: rsvp.email,
+          subject: `👑 Update regarding Princess Deeni's Celebration`,
+          html,
+        });
+
+        if (emailRes.success) emailsQueued++;
+      }
     }
 
     const successCount = results.filter((r) => r.success).length;
@@ -66,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: `Notification dispatch complete. Sent: ${successCount}, Failed: ${failureCount}`,
+        message: `Broadcast complete. SMS Sent: ${successCount}, Failed: ${failureCount}.${sendEmailAlso ? ` Emails processed/queued: ${emailsQueued}` : ""}`,
         results,
       },
       { status: 200 }

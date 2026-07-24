@@ -17,3 +17,16 @@ model Rsvp {
 
   @@index([phone])
 }
+
+model EmailQueue {
+  id        String    @id @default(cuid())
+  to        String
+  subject   String
+  html      String
+  status    String    @default("PENDING") // PENDING, SENT, FAILED
+  error     String?
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index([status])
+}

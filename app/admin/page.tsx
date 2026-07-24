@@ -19,6 +19,12 @@ interface ManualGuestRow {
   guestCount: number;
 }
 
+interface EmailQueueStats {
+  pending: number;
+  sent: number;
+  failed: number;
+}
+
 export default function AdminDashboard() {
   const [secret, setSecret] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,8 +37,14 @@ export default function AdminDashboard() {
   
   // Notification States
   const [smsText, setSmsText] = useState("👑 Royal Announcement: Hello [Name], please remember that Princess Deeni's 3rd birthday is coming up on Saturday, Aug 8 at 6:00 PM! Venue: 5 Star Banquet Hall.");
+  const [sendEmailAlso, setSendEmailAlso] = useState(true);
   const [notifyLoading, setNotifyLoading] = useState(false);
   const [notifyStatus, setNotifyStatus] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Email Queue States
+  const [emailStats, setEmailStats] = useState<EmailQueueStats>({ pending: 0, sent: 0, failed: 0 });
+  const [processQueueLoading, setProcessQueueLoading] = useState(false);
+  const [processQueueStatus, setProcessQueueStatus] = useState<{ success: boolean; message: string } | null>(null);
 
   // Multi-Guest Add States
   const [guestRows, setGuestRows] = useState<ManualGuestRow[]>([
@@ -47,6 +59,7 @@ export default function AdminDashboard() {
     if (savedSecret) {
       setSecret(savedSecret);
       fetchRsvps(savedSecret);
+      fetchEmailStats(savedSecret);
     }
   }, []);
 
@@ -77,6 +90,47 @@ export default function AdminDashboard() {
     }
   }
 
+  async function fetchEmailStats(adminSecret: string) {
+    try {
+      const res = await fetch("/api/admin/process-email-queue", {
+        headers: { "x-admin-secret": adminSecret },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEmailStats({ pending: data.pending || 0, sent: data.sent || 0, failed: data.failed || 0 });
+      }
+    } catch (err) {
+      console.error("Failed to fetch email queue stats:", err);
+    }
+  }
+
+  async function handleProcessEmailQueue() {
+    setProcessQueueLoading(true);
+    setProcessQueueStatus(null);
+    try {
+      const res = await fetch("/api/admin/process-email-queue", {
+        method: "POST",
+        headers: { "x-admin-secret": secret },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to process email queue.");
+
+      setProcessQueueStatus({
+        success: true,
+        message: data.message || "Queue processing complete!",
+      });
+
+      fetchEmailStats(secret);
+    } catch (err: any) {
+      setProcessQueueStatus({
+        success: false,
+        message: err.message || "Failed to process email queue.",
+      });
+    } finally {
+      setProcessQueueLoading(false);
+    }
+  }
+
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!secret.trim()) {
@@ -84,6 +138,7 @@ export default function AdminDashboard() {
       return;
     }
     fetchRsvps(secret);
+    fetchEmailStats(secret);
   }
 
   async function handleSendBroadcast(e: React.FormEvent) {
@@ -91,7 +146,7 @@ export default function AdminDashboard() {
     if (!smsText.trim()) return;
     
     const confirmSend = window.confirm(
-      `Are you sure you want to send this SMS to all ${count} RSVP'd families?`
+      `Are you sure you want to send this broadcast to all ${count} RSVP'd families?`
     );
     if (!confirmSend) return;
 
@@ -105,7 +160,7 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
           "x-admin-secret": secret,
         },
-        body: JSON.stringify({ message: smsText }),
+        body: JSON.stringify({ message: smsText, sendEmailAlso }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -115,6 +170,7 @@ export default function AdminDashboard() {
         success: true,
         message: data.message || "Broadcast sent successfully!",
       });
+      fetchEmailStats(secret);
     } catch (err: any) {
       setNotifyStatus({
         success: false,
@@ -171,7 +227,7 @@ export default function AdminDashboard() {
 
       setManualAddStatus({
         success: true,
-        message: `Successfully saved ${row.name} & sent confirmation SMS!`,
+        message: `Successfully saved ${row.name} & sent confirmation SMS/Email!`,
       });
 
       // Remove row if more than 1, or reset it if single
@@ -182,6 +238,7 @@ export default function AdminDashboard() {
       }
 
       fetchRsvps(secret);
+      fetchEmailStats(secret);
     } catch (err: any) {
       setManualAddStatus({
         success: false,
@@ -233,13 +290,14 @@ export default function AdminDashboard() {
 
     setManualAddStatus({
       success: failCount === 0,
-      message: `Batch complete! Successfully added & texted: ${successCount} guest(s). ${failCount > 0 ? `Failed: ${failCount}` : ""}`,
+      message: `Batch complete! Successfully added & notified: ${successCount} guest(s). ${failCount > 0 ? `Failed: ${failCount}` : ""}`,
     });
 
     // Reset rows to 1 empty
     setGuestRows([{ id: "row-1", name: "", phone: "", email: "", guestCount: 1 }]);
     setManualAddLoading(false);
     fetchRsvps(secret);
+    fetchEmailStats(secret);
   }
 
   function handleLogout() {
@@ -349,11 +407,49 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-white rounded-2xl p-5 border border-party-border text-center">
             <p className="text-xs font-bold uppercase tracking-wide text-party-muted">
-              Event Date
+              Resend Email Queue
             </p>
-            <p className="text-sm font-bold text-party-text mt-2">
-              Aug 8, 2026
+            <p className="text-xs font-bold text-party-text mt-2">
+              <span className="text-amber-600">{emailStats.pending} Pending</span> · <span className="text-green-600">{emailStats.sent} Sent</span>
             </p>
+          </div>
+        </div>
+
+        {/* Option B — Resend Email Queue Status & Manual Process Queue Panel */}
+        <div className="rounded-3xl bg-white p-6 border border-party-border flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-bold text-party-text">
+              Resend Email Queue &amp; Quota Manager (Option B)
+            </h2>
+            <p className="text-xs text-party-muted mt-1">
+              Emails are automatically queued to respect Resend&apos;s daily sending limit. Click below to manually process pending queued emails.
+            </p>
+            <div className="flex items-center gap-4 mt-3 text-xs font-semibold">
+              <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                ⏳ Pending: {emailStats.pending}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+                ✅ Sent: {emailStats.sent}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">
+                ❌ Failed: {emailStats.failed}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            <button
+              onClick={handleProcessEmailQueue}
+              disabled={processQueueLoading || emailStats.pending === 0}
+              className="rounded-xl bg-party-accent-deep px-6 py-3 font-body text-xs font-bold uppercase tracking-widest text-white transition hover:bg-party-text disabled:opacity-50"
+            >
+              {processQueueLoading ? "Processing Queue..." : "⚡ Process Email Queue Now"}
+            </button>
+            {processQueueStatus && (
+              <p className={`text-xs font-semibold text-center ${processQueueStatus.success ? "text-green-600" : "text-red-600"}`}>
+                {processQueueStatus.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -362,10 +458,10 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-display text-lg font-bold text-party-text">
-                Add Guests &amp; Direct SMS Manager
+                Add Guests &amp; Direct Notification Manager
               </h2>
               <p className="text-xs text-party-muted mt-0.5">
-                Add multiple guests at once, or send a confirmation SMS to a specific guest row.
+                Add multiple guests at once, or send confirmation SMS/Email to a specific guest row.
               </p>
             </div>
             <button
@@ -445,7 +541,7 @@ export default function AdminDashboard() {
                       disabled={manualAddLoading}
                       onClick={() => handleSendSingleGuestRow(row)}
                       className="flex-1 rounded-lg bg-party-accent-deep py-1.5 px-2 font-body text-[10px] font-bold uppercase tracking-wider text-white hover:bg-party-text transition disabled:opacity-50"
-                      title="Send confirmation SMS to this specific guest"
+                      title="Send confirmation SMS/Email to this specific guest"
                     >
                       Send This
                     </button>
@@ -491,24 +587,21 @@ export default function AdminDashboard() {
                 disabled={manualAddLoading}
                 className="rounded-xl bg-party-text px-6 py-2.5 font-body text-xs font-bold uppercase tracking-widest text-white hover:bg-party-accent-deep transition disabled:opacity-60"
               >
-                {manualAddLoading ? "Processing..." : `Save All & Send SMS (${guestRows.length})`}
+                {manualAddLoading ? "Processing..." : `Save All & Notify Guests (${guestRows.length})`}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Main Grid: Broadcast SMS + Guest List */}
+        {/* Main Grid: Broadcast SMS/Email + Guest List */}
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Broadcast SMS Card */}
+          {/* Broadcast SMS/Email Card */}
           <div className="lg:col-span-1 rounded-3xl bg-white p-6 border border-party-border h-fit">
             <h2 className="font-display text-lg font-bold text-party-text mb-2">
-              Broadcast SMS (All Guests)
+              Broadcast Message (All Guests)
             </h2>
             <p className="text-xs text-party-muted mb-2">
-              Send a text update to all RSVPs. Placeholders: <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Name]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Event Name]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[MM/DD/YYYY]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Address]</code>.
-            </p>
-            <p className="text-[11px] text-party-muted/60 mb-4 italic">
-              Note: Twilio automatically suppresses delivery to any recipient who has replied STOP.
+              Send a text/email update to all RSVPs. Placeholders: <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Name]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Event Name]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[MM/DD/YYYY]</code>, <code className="bg-party-bg px-1 py-0.5 rounded text-party-accent-deep font-mono">[Address]</code>.
             </p>
 
             <form onSubmit={handleSendBroadcast} className="space-y-4">
@@ -516,10 +609,23 @@ export default function AdminDashboard() {
                 <textarea
                   value={smsText}
                   onChange={(e) => setSmsText(e.target.value)}
-                  rows={6}
+                  rows={5}
                   placeholder="Type your message..."
                   className="w-full rounded-2xl border border-party-border bg-party-bg p-4 font-body text-sm text-party-text outline-none transition focus:border-party-accent"
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="send-email-too"
+                  type="checkbox"
+                  checked={sendEmailAlso}
+                  onChange={(e) => setSendEmailAlso(e.target.checked)}
+                  className="h-4 w-4 rounded border-party-border accent-party-accent-deep cursor-pointer"
+                />
+                <label htmlFor="send-email-too" className="font-body text-xs font-semibold text-party-text cursor-pointer select-none">
+                  Also send Email to guests with email addresses
+                </label>
               </div>
 
               {notifyStatus && (
@@ -539,7 +645,7 @@ export default function AdminDashboard() {
                 disabled={notifyLoading || count === 0}
                 className="w-full rounded-full bg-party-accent-deep py-3 font-body text-sm font-bold uppercase tracking-widest text-white transition hover:bg-party-text disabled:opacity-60"
               >
-                {notifyLoading ? "Sending SMS..." : "Send Broadcast to All Guests"}
+                {notifyLoading ? "Sending Broadcast..." : "Send Broadcast"}
               </button>
             </form>
           </div>
@@ -552,7 +658,10 @@ export default function AdminDashboard() {
                   Attending Guests List ({count})
                 </h2>
                 <button
-                  onClick={() => fetchRsvps(secret)}
+                  onClick={() => {
+                    fetchRsvps(secret);
+                    fetchEmailStats(secret);
+                  }}
                   disabled={loading}
                   className="text-xs font-bold uppercase tracking-wider text-party-accent-deep hover:text-party-text transition"
                 >
