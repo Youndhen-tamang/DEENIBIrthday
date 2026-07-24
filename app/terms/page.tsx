@@ -85,7 +85,10 @@ export default function TermsPage() {
               6. Information We Collect
             </h2>
             <p>
-              When you submit the RSVP form, we collect your name, phone number, email address (optional), and guest count. This information is used solely for the purpose of managing RSVPs and sending event-related communications.
+              When you submit the RSVP form, we collect your name, phone number, email address (optional), and guest count. This information is used solely for the purpose of managing RSVPs and sending event-related communications. We do not sell, trade, rent, or share your mobile phone number or SMS opt-in data with third parties or affiliates for marketing or promotional purposes. For full details, see our{" "}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-[#B87340] transition">
+                Privacy Policy
+              </Link>.
             </p>
           </section>
 

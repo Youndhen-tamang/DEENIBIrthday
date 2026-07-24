@@ -83,7 +83,13 @@ export default function PrivacyPage() {
               5. Data Sharing
             </h2>
             <p>
-              We <strong>do not sell, trade, or share</strong> your personal information with third parties, except:
+              We <strong>do not sell, trade, rent, or share your mobile phone number 
+              or SMS opt-in data with third parties or affiliates for marketing or 
+              promotional purposes.</strong>
+            </p>
+            <p className="mt-3">
+              We share limited information only with the following service provider, 
+              solely to operate this event:
             </p>
             <ul className="mt-3 list-disc pl-6 space-y-1">
               <li>
